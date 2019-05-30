@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8' />
+
+    <link href='node_modules/@fullcalendar/core/main.min.css' rel='stylesheet' />
+		<link href='node_modules/@fullcalendar/daygrid/main.min.css' rel='stylesheet' />
+		<style>
+			.fc-highlight{
+				background-color: red !important;
+			}
+		</style>
+  </head>
+  <body>
+
+		<div id='calendar'></div>
+		<script src='node_modules/@fullcalendar/core/main.min.js'></script>
+		<script src='node_modules/@fullcalendar/daygrid/main.min.js'></script>
+		<script src='node_modules/@fullcalendar/interaction/main.min.js'></script>
+		<script src='node_modules/jquery/dist/jquery.min.js'></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+					plugins: [ 'interaction' ,'dayGrid' ],
+					events: [
+						{
+							title  : 'event1',
+							start  : '2019-05-01'
+						},
+						{
+							title  : 'event2',
+							start  : '2019-05-05',
+							end    : '2019-05-07'
+						},
+						{
+							title  : 'event3',
+							start  : '2019-05-09T12:30:00',
+							allDay : false // will make the time show
+						}
+					]
+        });
+				calendar.render();
+				var eventDates = [];
+				$( calendar.getEvents() ).each(function(){
+					if($(this)[0]['end'] == null)
+						eventDates.push( convertDate($(this)[0]['start'] ) );
+					else{
+						allDates = getAllDatesBetweenTwoDates($(this)[0]['start'], $(this)[0]['end']);
+						$(allDates).each(function(index){
+							eventDates.push(convertDate(allDates[index].toString()));
+						});
+					}
+				});
+				function getAllDatesBetweenTwoDates(start, end) {
+					var currentDate = new Date(start.getTime()),
+							between = [];
+					while (currentDate < end) {
+							between.push(new Date(currentDate));
+							currentDate.setDate(currentDate.getDate() + 1);
+					}
+					return between;
+				}
+				function convertDate( date ){
+					d = new Date(date);
+					month = '' + (d.getMonth() + 1),
+					day = '' + d.getDate(),
+					year = d.getFullYear();
+					if (month.length < 2) month = '0' + month;
+					if (day.length < 2) day = '0' + day;
+					return [year, month, day].join('-');
+				}
+				$('.fc-day').click(function(){
+					selected_date = $(this).attr('data-date');
+					for(i = 0 ; i < eventDates.length ; i ++ )
+						if ( selected_date.localeCompare(eventDates[i]) == 0 ) 
+							return;
+					if( $(this).hasClass('fc-highlight') )
+						$(this).removeClass('fc-highlight');
+					else
+						$(this).addClass('fc-highlight');
+				});
+				function getSeletedDates(){
+					var selected_date = [];
+					$('.fc-highlight').each(function(){
+						selected_date.push( $(this).attr('data-date') );
+					});
+					return selected_date;
+				}
+			});
+    </script>
+  </body>
+</html>
